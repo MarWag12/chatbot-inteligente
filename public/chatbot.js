@@ -10,7 +10,7 @@ const intents = {
   'localizacao': ['onde estao localizados', 'onde fica', 'encontrar', "como faco para chegar até voces", "central", "endereco", "como faço", "chegar", "trajecto", "localizacao", "clinica"]
 };
 
-// Estado do agendamento
+// Estado
 let agendamentoEmAndamento = false;
 let etapaAgendamento = 0;
 let dadosAgendamento = {};
@@ -34,24 +34,28 @@ function identificarIntencao(pergunta) {
   return null;
 }
 
+function cancelarAgendamento() {
+  agendamentoEmAndamento = false;
+  etapaAgendamento = 0;
+  dadosAgendamento = {};
+  document.getElementById('cancelarBtn').style.display = 'none';
+  const chat = document.getElementById('chat');
+  chat.innerHTML += `<p><strong>Bot:</strong> Tudo bem, o agendamento foi cancelado.</p>`;
+}
+
 function enviarPergunta() {
   const input = document.getElementById('userInput');
   const pergunta = input.value.trim();
   const texto = normalizarTexto(pergunta);
   const chat = document.getElementById('chat');
 
+  if (!pergunta) return;
+
   chat.innerHTML += `<p><strong>Você:</strong> ${pergunta}</p>`;
 
-  // Verifica cancelamento em qualquer momento
+  // Verifica cancelamento por texto
   if (["cancelar", "desistir", "parar", "sair", "nao quero"].some(p => texto.includes(p))) {
-    if (agendamentoEmAndamento) {
-      agendamentoEmAndamento = false;
-      etapaAgendamento = 0;
-      dadosAgendamento = {};
-      chat.innerHTML += `<p><strong>Bot:</strong> Tudo bem, o agendamento foi cancelado.</p>`;
-    } else {
-      chat.innerHTML += `<p><strong>Bot:</strong> Nenhum processo de agendamento está em andamento.</p>`;
-    }
+    cancelarAgendamento();
     input.value = '';
     return;
   }
@@ -75,6 +79,7 @@ function enviarPergunta() {
       case 4:
         dadosAgendamento.motivo = pergunta;
 
+        // Envia os dados para a API
         fetch('api/agendar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,13 +89,14 @@ function enviarPergunta() {
         .then(json => {
           chat.innerHTML += `<p><strong>Bot:</strong> ${json.msg}</p>`;
         })
-        .catch(err => {
+        .catch(() => {
           chat.innerHTML += `<p><strong>Bot:</strong> Ocorreu um erro ao tentar agendar.</p>`;
         });
 
         agendamentoEmAndamento = false;
         etapaAgendamento = 0;
         dadosAgendamento = {};
+        document.getElementById('cancelarBtn').style.display = 'none';
         break;
     }
 
@@ -109,6 +115,7 @@ function enviarPergunta() {
         agendamentoEmAndamento = true;
         etapaAgendamento = 0;
         dadosAgendamento = {};
+        document.getElementById('cancelarBtn').style.display = 'inline';
         chat.innerHTML += `<p><strong>Bot:</strong> Claro! Vamos agendar sua consulta. Qual o seu nome completo?</p>`;
         input.value = '';
         return;
