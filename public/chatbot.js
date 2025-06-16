@@ -4,7 +4,7 @@ const intents = {
   'nao': ["nao", "deixa", "esquece", "não quero", "não preciso", "não necessito", "não quero mais", "nada", "esqueca"],
   'agredecimento': ["obrigado", "obg", "valeu", "tá numa", "tranquilo", "ajuda", "obrigado pela resposta"],
   'saudacao': ["estas bom", "oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola", "oi tudo bem", "olá tudo bem", "bom dia tudo bem", "boa tarde tudo bem", "boa noite tudo bem"],
-  'criador': ["criou", "te fez", "criado por", "seu dono", "criador", "tu es", "tu", "sobre"],
+  'criador': ["criou", "criado por", "seu dono", "criador"],
   'horario': ['horário', 'funciona', 'abre', 'fecha', 'atendimento'],
   'especialidade': ['especialidade', 'médico', 'tem', 'oferece'],
   'consulta': ['marcar', 'consulta', 'agendar'],
@@ -32,31 +32,39 @@ function identificarIntencao(pergunta) {
   return null;
 }
 
-// UI - Adicionar mensagens
 function adicionarMensagem(origem, texto) {
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
 
-  const lado = origem === "Você" ? "text-right" : "text-left";
-  const bg = origem === "Você" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800";
-  const borda = origem === "Você" ? "rounded-xl rounded-br-none" : "rounded-xl rounded-bl-none";
+  const isUser = origem === "Você";
+  const avatar = isUser
+    ? `<img src="https://ui-avatars.com/api/?name=Você&background=1E40AF&color=fff&size=32" class="rounded-full w-8 h-8"/>`
+    : `<img src="https://ui-avatars.com/api/?name=Bot&background=4B5563&color=fff&size=32" class="rounded-full w-8 h-8"/>`;
 
-  div.className = `${lado} animate-fade-in`;
-  div.innerHTML = `
-    <div class="inline-block ${bg} px-4 py-2 ${borda} shadow">${texto}</div>
-  `;
+  div.className = `flex ${isUser ? "justify-end" : "justify-start"} items-start space-x-2 animate-fade-in`;
+
+  div.innerHTML = isUser
+    ? `
+      <div class="max-w-md bg-blue-600 text-white px-4 py-2 rounded-xl shadow">${formatarTexto(texto)}</div>
+      ${avatar}
+    `
+    : `
+      ${avatar}
+      <div class="max-w-md bg-gray-700 text-white px-4 py-2 rounded-xl shadow">${formatarTexto(texto)}</div>
+    `;
+
   chat.appendChild(div);
   scrollChatToBottom();
 }
 
-// UI - Scroll automático
+
 function scrollChatToBottom() {
   const chat = document.getElementById("chat");
   chat.scrollTop = chat.scrollHeight;
 }
 
-// UI - Indicador digitando
 function mostrarDigitando() {
+  removerDigitando();
   const chat = document.getElementById("chat");
   const typing = document.createElement("div");
   typing.id = "digitando";
@@ -75,7 +83,6 @@ function removerDigitando() {
   if (typing) typing.remove();
 }
 
-// UI - Alerta de erro ou sucesso
 function mostrarAlerta(tipo, mensagem) {
   const cor = tipo === "erro" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800";
   const div = document.createElement("div");
@@ -85,7 +92,6 @@ function mostrarAlerta(tipo, mensagem) {
   scrollChatToBottom();
 }
 
-// Barra de progresso (opcional)
 function atualizarProgresso(etapa) {
   const progresso = document.getElementById("progressBar");
   if (!progresso) return;
@@ -93,7 +99,6 @@ function atualizarProgresso(etapa) {
   progresso.style.width = `${porcentagem}%`;
 }
 
-// Cancelar agendamento
 function cancelarAgendamento() {
   agendamentoEmAndamento = false;
   etapaAgendamento = 0;
@@ -103,7 +108,6 @@ function cancelarAgendamento() {
   atualizarProgresso(0);
 }
 
-// Enviar pergunta
 function enviarPergunta() {
   const input = document.getElementById('userInput');
   const pergunta = input.value.trim();
@@ -114,7 +118,7 @@ function enviarPergunta() {
   adicionarMensagem("Você", pergunta);
   input.value = '';
 
-  if (["cancelar", "desistir", "parar", "sair", "nao quero","esquece", "deixa", "esqueca"].some(p => texto.includes(p))) {
+  if (["cancelar", "desistir", "parar", "sair", "nao quero", "esquece", "deixa", "esqueca"].some(p => texto.includes(p))) {
     cancelarAgendamento();
     return;
   }
@@ -129,35 +133,44 @@ function enviarPergunta() {
         dadosAgendamento.nome = pergunta;
         adicionarMensagem("Bot", "Qual o seu e-mail?");
         break;
+
       case 2:
+        if (!/\S+@\S+\.\S+/.test(pergunta)) {
+          adicionarMensagem("Bot", "Por favor, insira um e-mail válido.");
+          etapaAgendamento--; // Repetir esta etapa
+          return;
+        }
         dadosAgendamento.email = pergunta;
         adicionarMensagem("Bot", "Qual a data e hora da consulta? (ex: 2025-06-20 14:00)");
         break;
+
       case 3:
         dadosAgendamento.data = pergunta;
         adicionarMensagem("Bot", "Qual o motivo da consulta?");
         break;
+
       case 4:
         dadosAgendamento.motivo = pergunta;
         mostrarDigitando();
 
-        fetch('api/agendar', {
+        fetch('/api/agendar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dadosAgendamento)
         })
-          .then(res => res.json())
-          .then(json => {
-            removerDigitando();
-            adicionarMensagem("Bot", json.msg);
-            mostrarAlerta("sucesso", "Consulta registrada com sucesso.");
-          })
-          .catch(() => {
-            removerDigitando();
-            adicionarMensagem("Bot", "Ocorreu um erro ao tentar agendar.");
-            mostrarAlerta("erro", "Erro ao agendar. Tente novamente.");
-          });
+        .then(res => res.json())
+        .then(json => {
+          removerDigitando();
+          adicionarMensagem("Bot", json.msg || "Consulta registrada com sucesso.");
+          mostrarAlerta("sucesso", "Consulta registrada com sucesso.");
+        })
+        .catch(() => {
+          removerDigitando();
+          adicionarMensagem("Bot", "Ocorreu um erro ao tentar agendar.");
+          mostrarAlerta("erro", "Erro ao agendar. Tente novamente.");
+        });
 
+        // Resetar estado
         agendamentoEmAndamento = false;
         etapaAgendamento = 0;
         dadosAgendamento = {};
@@ -169,12 +182,14 @@ function enviarPergunta() {
     return;
   }
 
-  // Caso não seja agendamento
+  // Caso não esteja no fluxo de agendamento
   mostrarDigitando();
 
   fetch('/api/faqs')
-    .then(res => res.json())
-    .then(faqs => {
+  .then(res => res.json())
+  .then(faqs => {
+    // Simula tempo de "digitação"
+    setTimeout(() => {
       removerDigitando();
       const intencao = identificarIntencao(pergunta);
       let resposta = 'Desculpe, não entendi sua pergunta. Faça somente perguntas sobre a clínica.';
@@ -196,5 +211,15 @@ function enviarPergunta() {
       }
 
       adicionarMensagem("Bot", resposta);
-    });
+    }, 1500); // 800ms de atraso (ajustável)
+  })
+
 }
+function formatarTexto(texto) {
+  return texto
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')        // **negrito**
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')                     // *itálico*
+    .replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded">$1</code>') // `código`
+    .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="underline text-blue-400">$1</a>');
+}
+
