@@ -1,12 +1,14 @@
 const intents = {
   'ok': ["ok", "Está bem", "interessante", "serio", "que bom", "óptimo", "beleza", "show"],
+  'sim': ["sim", "preciso", "necessito"],
   'agredecimento': ["obrigado", "obg", "valeu", "tá numa", "tranquilo", "ajuda", "obrigado pela resposta"],
   'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
-  'criador': ["criou", "te fez", "você", "criado por", "seu dono", "criador"],
+  'criador': ["criou", "te fez", "criado por", "seu dono", "criador", "tu es", "tu", "sobre"],
   'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
   'horario': ['horário', 'funciona', 'abre', 'fecha', 'atendimento'],
   'especialidade': ['especialidade', 'médico', 'tem', 'oferece'],
-  'consulta': ['marcar', 'consulta', 'agendar']
+  'consulta': ['marcar', 'consulta', 'agendar'],
+  'localizacao': ['onde estao localizados', 'onde fica', 'encontrar', "como faco para chegar até voces", "central", "endereco", "como faço", "chegar", "trajecto", "localizacao", "clinica"]
 };
 
 function normalizarTexto(texto) {
@@ -36,7 +38,7 @@ function enviarPergunta() {
     .then(res => res.json())
     .then(faqs => {
       const intencao = identificarIntencao(pergunta);
-      let resposta = 'Desculpe, não entendi sua pergunta.';
+      let resposta = 'Desculpe, não entendi sua pergunta. Faça somente perguntas sobre a clínica."';
 
       if (intencao) {
         const faqRelacionada = faqs.find(faq => normalizarTexto(faq.intencao) === intencao);
