@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <title>Chatbot Clínica</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-in-out;
+}
+</style>
+
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
   <div class="w-full max-w-md p-4 bg-white rounded-2xl shadow-md">
