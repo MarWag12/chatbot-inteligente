@@ -17,9 +17,9 @@ let dadosAgendamento = {};
 
 function normalizarTexto(texto) {
   return texto
-    .normalize("NFD") // separa acento da letra
-    .replace(/[\u0300-\u036f]/g, "") // remove os acentos
-    .toLowerCase(); // tudo minúsculo
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function identificarIntencao(pergunta) {
@@ -37,9 +37,24 @@ function identificarIntencao(pergunta) {
 function enviarPergunta() {
   const input = document.getElementById('userInput');
   const pergunta = input.value.trim();
+  const texto = normalizarTexto(pergunta);
   const chat = document.getElementById('chat');
 
   chat.innerHTML += `<p><strong>Você:</strong> ${pergunta}</p>`;
+
+  // Verifica cancelamento em qualquer momento
+  if (["cancelar", "desistir", "parar", "sair", "nao quero"].some(p => texto.includes(p))) {
+    if (agendamentoEmAndamento) {
+      agendamentoEmAndamento = false;
+      etapaAgendamento = 0;
+      dadosAgendamento = {};
+      chat.innerHTML += `<p><strong>Bot:</strong> Tudo bem, o agendamento foi cancelado.</p>`;
+    } else {
+      chat.innerHTML += `<p><strong>Bot:</strong> Nenhum processo de agendamento está em andamento.</p>`;
+    }
+    input.value = '';
+    return;
+  }
 
   // Fluxo de agendamento
   if (agendamentoEmAndamento) {
@@ -60,7 +75,6 @@ function enviarPergunta() {
       case 4:
         dadosAgendamento.motivo = pergunta;
 
-        // Enviar agendamento
         fetch('api/agendar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -74,7 +88,6 @@ function enviarPergunta() {
           chat.innerHTML += `<p><strong>Bot:</strong> Ocorreu um erro ao tentar agendar.</p>`;
         });
 
-        // Resetar estado
         agendamentoEmAndamento = false;
         etapaAgendamento = 0;
         dadosAgendamento = {};
@@ -85,7 +98,7 @@ function enviarPergunta() {
     return;
   }
 
-  // Verifica se é uma FAQ normal
+  // Caso não seja agendamento
   fetch('/api/faqs')
     .then(res => res.json())
     .then(faqs => {
