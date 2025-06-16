@@ -35,27 +35,32 @@ function identificarIntencao(pergunta) {
 function adicionarMensagem(origem, texto) {
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
-
   const isUser = origem === "Você";
+
   const avatar = isUser
-    ? `<img src="https://ui-avatars.com/api/?name=Você&background=1E40AF&color=fff&size=32" class="rounded-full w-8 h-8"/>`
-    : `<img src="https://ui-avatars.com/api/?name=Bot&background=4B5563&color=fff&size=32" class="rounded-full w-8 h-8"/>`;
+    ? `<div class="flex-shrink-0 w-10 h-10 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold">EU</div>`
+    : `<div class="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">BOT</div>`;
 
   div.className = `flex ${isUser ? "justify-end" : "justify-start"} items-start space-x-2 animate-fade-in`;
 
   div.innerHTML = isUser
     ? `
-      <div class="max-w-md bg-blue-600 text-white px-4 py-2 rounded-xl shadow">${formatarTexto(texto)}</div>
-      ${avatar}
+      <div class="flex items-end space-x-2">
+        <div class="max-w-[80%] bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-br-none shadow">${formatarTexto(texto)}</div>
+        ${avatar}
+      </div>
     `
     : `
-      ${avatar}
-      <div class="max-w-md bg-gray-700 text-white px-4 py-2 rounded-xl shadow">${formatarTexto(texto)}</div>
+      <div class="flex items-start space-x-2">
+        ${avatar}
+        <div class="max-w-[80%] bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl rounded-bl-none shadow">${formatarTexto(texto)}</div>
+      </div>
     `;
 
   chat.appendChild(div);
   scrollChatToBottom();
 }
+
 
 
 function scrollChatToBottom() {
@@ -222,4 +227,3 @@ function formatarTexto(texto) {
     .replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded">$1</code>') // `código`
     .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="underline text-blue-400">$1</a>');
 }
-
