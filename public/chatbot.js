@@ -1,4 +1,6 @@
 const intents = {
+  'ok': ["ok", "Está bem", "interessante", "serio", "que bom", "óptimo", "beleza", "show"],
+  'agredecimento': ["obrigado", "obg", "valeu", "tá numa", "tranquilo", "ajuda", "obrigado pela resposta"],
   'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
   'criador': ["criou", "te fez", "você", "criado por", "seu dono", "criador"],
   'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
