@@ -1,4 +1,7 @@
 const intents = {
+  'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
+  'criador': ["criou", "te fez", "você", "criado por", "seu dono", "criador"],
+  'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
   'horario': ['horário', 'funciona', 'abre', 'fecha', 'atendimento'],
   'especialidade': ['especialidade', 'médico', 'tem', 'oferece'],
   'consulta': ['marcar', 'consulta', 'agendar']
