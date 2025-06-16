@@ -158,22 +158,29 @@ function enviarPergunta() {
         dadosAgendamento.motivo = pergunta;
         mostrarDigitando();
 
-        fetch('/api/agendar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dadosAgendamento)
-        })
-        .then(res => res.json())
-        .then(json => {
-          removerDigitando();
-          adicionarMensagem("Bot", json.msg || "Consulta registrada com sucesso.");
-          mostrarAlerta("sucesso", "Consulta registrada com sucesso.");
-        })
-        .catch(() => {
-          removerDigitando();
-          adicionarMensagem("Bot", "Ocorreu um erro ao tentar agendar.");
-          mostrarAlerta("erro", "Erro ao agendar. Tente novamente.");
-        });
+       fetch('api/agendar', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(dadosAgendamento)
+})
+  .then(async res => {
+    const data = await res.json();
+    removerDigitando();
+
+    if (res.ok) {
+      adicionarMensagem("Bot", data.msg);
+      mostrarAlerta("sucesso", "Consulta registrada com sucesso.");
+    } else {
+      adicionarMensagem("Bot", data.msg || "Erro ao agendar.");
+      mostrarAlerta("erro", data.msg || "Erro ao agendar. Tente novamente.");
+    }
+  })
+  .catch(() => {
+    removerDigitando();
+    adicionarMensagem("Bot", "Erro de conexão com o servidor.");
+    mostrarAlerta("erro", "Erro de rede ou servidor fora do ar.");
+  });
+
 
         // Resetar estado
         agendamentoEmAndamento = false;
