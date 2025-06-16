@@ -3,12 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>Chatbot Clínica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h2>Chatbot da Clínica</h2>
-  <div id="chat"></div>
-  <input id="userInput" placeholder="Digite sua pergunta" />
-  <button onclick="enviarPergunta()">Enviar</button>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-md p-4 bg-white rounded-2xl shadow-md">
+    <h2 class="text-xl font-bold text-blue-600 text-center mb-4">Assistente Virtual da Clínica</h2>
+
+    <div id="chat" class="h-64 overflow-y-auto bg-gray-50 border p-3 rounded-lg mb-3 space-y-2">
+      <!-- Mensagens aparecem aqui -->
+    </div>
+
+    <div class="flex space-x-2">
+      <input id="userInput"
+             class="flex-grow border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+             placeholder="Como posso ajudar?" />
+      <button onclick="enviarPergunta()"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+        Enviar
+      </button>
+    </div>
+  </div>
 
   <script src="chatbot.js"></script>
 </body>
