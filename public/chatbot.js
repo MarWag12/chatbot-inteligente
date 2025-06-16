@@ -4,12 +4,16 @@ const intents = {
   'agredecimento': ["obrigado", "obg", "valeu", "tá numa", "tranquilo", "ajuda", "obrigado pela resposta"],
   'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
   'criador': ["criou", "te fez", "criado por", "seu dono", "criador", "tu es", "tu", "sobre"],
-  'saudacao': ["oi", "olá", "bom dia", "boa tarde", "boa noite", "e aí", "ola"],
   'horario': ['horário', 'funciona', 'abre', 'fecha', 'atendimento'],
   'especialidade': ['especialidade', 'médico', 'tem', 'oferece'],
   'consulta': ['marcar', 'consulta', 'agendar'],
   'localizacao': ['onde estao localizados', 'onde fica', 'encontrar', "como faco para chegar até voces", "central", "endereco", "como faço", "chegar", "trajecto", "localizacao", "clinica"]
 };
+
+// Estado do agendamento
+let agendamentoEmAndamento = false;
+let etapaAgendamento = 0;
+let dadosAgendamento = {};
 
 function normalizarTexto(texto) {
   return texto
@@ -33,12 +37,69 @@ function identificarIntencao(pergunta) {
 function enviarPergunta() {
   const input = document.getElementById('userInput');
   const pergunta = input.value.trim();
+  const chat = document.getElementById('chat');
 
+  chat.innerHTML += `<p><strong>Você:</strong> ${pergunta}</p>`;
+
+  // Fluxo de agendamento
+  if (agendamentoEmAndamento) {
+    etapaAgendamento++;
+    switch (etapaAgendamento) {
+      case 1:
+        dadosAgendamento.nome = pergunta;
+        chat.innerHTML += `<p><strong>Bot:</strong> Qual o seu e-mail?</p>`;
+        break;
+      case 2:
+        dadosAgendamento.email = pergunta;
+        chat.innerHTML += `<p><strong>Bot:</strong> Qual a data e hora da consulta? (ex: 2025-06-20 14:00)</p>`;
+        break;
+      case 3:
+        dadosAgendamento.data = pergunta;
+        chat.innerHTML += `<p><strong>Bot:</strong> Qual o motivo da consulta?</p>`;
+        break;
+      case 4:
+        dadosAgendamento.motivo = pergunta;
+
+        // Enviar agendamento
+        fetch('api/agendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dadosAgendamento)
+        })
+        .then(res => res.json())
+        .then(json => {
+          chat.innerHTML += `<p><strong>Bot:</strong> ${json.msg}</p>`;
+        })
+        .catch(err => {
+          chat.innerHTML += `<p><strong>Bot:</strong> Ocorreu um erro ao tentar agendar.</p>`;
+        });
+
+        // Resetar estado
+        agendamentoEmAndamento = false;
+        etapaAgendamento = 0;
+        dadosAgendamento = {};
+        break;
+    }
+
+    input.value = '';
+    return;
+  }
+
+  // Verifica se é uma FAQ normal
   fetch('/api/faqs')
     .then(res => res.json())
     .then(faqs => {
       const intencao = identificarIntencao(pergunta);
-      let resposta = 'Desculpe, não entendi sua pergunta. Faça somente perguntas sobre a clínica."';
+      let resposta = 'Desculpe, não entendi sua pergunta. Faça somente perguntas sobre a clínica.';
+
+      if (intencao === 'consulta') {
+        agendamentoEmAndamento = true;
+        etapaAgendamento = 0;
+        dadosAgendamento = {};
+        chat.innerHTML += `<p><strong>Bot:</strong> Claro! Vamos agendar sua consulta. Qual o seu nome completo?</p>`;
+        input.value = '';
+        return;
+      }
 
       if (intencao) {
         const faqRelacionada = faqs.find(faq => normalizarTexto(faq.intencao) === intencao);
@@ -47,11 +108,7 @@ function enviarPergunta() {
         }
       }
 
-      document.getElementById('chat').innerHTML += `
-        <p><strong>Você:</strong> ${pergunta}</p>
-        <p><strong>Bot:</strong> ${resposta}</p>
-      `;
-
+      chat.innerHTML += `<p><strong>Bot:</strong> ${resposta}</p>`;
       input.value = '';
     });
 }
