@@ -5,6 +5,10 @@
   <title>Assistente Virtual</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a2e0c7cfd9.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link rel="icon" href="../assets/icon/chatbot.png" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1f2937" />
   <style>
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(10px); }
@@ -23,6 +27,14 @@
   </style>
 </head>
 <body class="bg-gray-900 text-white h-screen flex flex-col font-sans">
+  <!-- Ícone do robô com animação -->
+   <br>
+<div class="flex justify-center mb-4">
+  <img src="../assets/icon/chatbot.png"
+       alt="Robô Assistente"
+       class="h-16 w-16 rounded-full shadow-lg animate-bounce" />
+</div>
+
 
   <div class="flex-1 overflow-hidden">
     <div id="chat" class="h-full overflow-y-auto p-4 space-y-4">
